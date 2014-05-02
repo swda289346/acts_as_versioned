@@ -166,7 +166,7 @@ module ActiveRecord #:nodoc:
 
         cattr_accessor :versioned_class_name, :versioned_foreign_key, :versioned_table_name, :versioned_inheritance_column,
                        :version_column, :max_version_limit, :track_altered_attributes, :version_condition, :version_sequence_name, :non_versioned_columns,
-                       :version_association_options, :version_if_changed
+                       :version_association_options, :version_if_changed, :index_options
 
         self.versioned_class_name         = options[:class_name] || "Version"
         self.versioned_foreign_key        = options[:foreign_key] || self.to_s.foreign_key
@@ -182,6 +182,7 @@ module ActiveRecord #:nodoc:
                                                     :foreign_key => versioned_foreign_key,
                                                     :dependent   => :delete_all
         }.merge(options[:association_options] || {})
+        self.index_options = options[:index_name] ? {name: options[:index_name]} : {}
 
         if block_given?
           extension_module_name = "#{versioned_class_name}Extension"
@@ -442,7 +443,7 @@ module ActiveRecord #:nodoc:
                                          :precision => type_col.precision
             end
 
-            self.connection.add_index versioned_table_name, versioned_foreign_key
+            self.connection.add_index versioned_table_name, versioned_foreign_key, self.index_options
           end
 
           # Rake migration task to drop the versioned table
